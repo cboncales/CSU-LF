@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authUser'
 
 
 //profile url in supabase
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Props
 defineProps({
@@ -46,7 +46,7 @@ const lastName = ref('')
 const profile_pic = ref('')
 
 const fetchUserDetails = async () => {
-  // Step 1: Get the current authenticated user
+  // Get the current authenticated user directly from auth
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   if (authError) {
@@ -54,26 +54,19 @@ const fetchUserDetails = async () => {
     return;
   }
 
-  // Step 2: Use the user_id from the authenticated user to fetch profile data
-  const { data, error: dbError } = await supabase
-    .from('user_profiles_view') //user_profiles_view
-    .select('full_name, avatar_url, firstname, lastname, profile_pic')
-    .eq('user_id', user.id)  // Use the user ID from the auth data
-    .single();  // Ensure only one row is returned
-
-  if (dbError) {
-    console.error(dbError);
-  } else {
-    full_name.value = data?.full_name;
-    avatar_url.value = data?.avatar_url;
-    firstName.value = data?.firstname;
-    lastName.value = data?.lastname;
-    profile_pic.value = data?.profile_pic;
-  }
+  // Get data directly from user metadata (real-time, no caching)
+  full_name.value = user?.user_metadata?.full_name;
+  avatar_url.value = user?.user_metadata?.avatar_url;
+  firstName.value = user?.user_metadata?.firstname;
+  lastName.value = user?.user_metadata?.lastname;
+  profile_pic.value = user?.user_metadata?.profile_pic;
 };
 
 
 onMounted(fetchUserDetails)
+
+// Listen for profile updates
+window.addEventListener('profile-updated', fetchUserDetails)
 </script>
 
 <template>

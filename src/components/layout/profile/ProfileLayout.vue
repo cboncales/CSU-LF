@@ -34,7 +34,7 @@ const posts = ref([]) // Array to store posts
 const full_name = ref('')
 const avatar_url = ref('')
 
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Reset form fields
 const resetForm = () => {
@@ -141,12 +141,12 @@ const updateProfile = async () => {
   let uploadedFileName = profile_pic.value
 
   if (profile_pic.value instanceof File) {
-    uploadedFileName = `public/${profile_pic.value.name}`
+    const filePath = `public/${profile_pic.value.name}`
 
     // Attempt to upload or overwrite the file if it already exists
     const { error: uploadError } = await supabase.storage
       .from('images')
-      .upload(uploadedFileName, profile_pic.value, {
+      .upload(filePath, profile_pic.value, {
         upsert: true // Correctly include the upsert option here
       })
 
@@ -155,6 +155,8 @@ const updateProfile = async () => {
       return
     }
 
+    // Store the full path for consistency with how images are displayed
+    uploadedFileName = filePath
     console.log('Image uploaded successfully!')
   }
 
@@ -191,9 +193,20 @@ const updateProfile = async () => {
     console.error('Error updating posts table:', updatePostsError)
   }
 
-  fetchUserDetails()
+  // Update local state immediately
+  firstName.value = updatedMetadata.firstname
+  lastName.value = updatedMetadata.lastname
+  profile_pic.value = updatedMetadata.profile_pic
+  facebook_link.value = updatedMetadata.facebook_link
+
   formAction.value.formSuccessMessage = 'Profile Updated Successfully'
   showEditModal.value = false
+  
+  // Fetch updated details to ensure everything is in sync
+  await fetchUserDetails()
+  
+  // Emit custom event to notify other components to refresh
+  window.dispatchEvent(new CustomEvent('profile-updated'))
 }
 
 onMounted(() => {

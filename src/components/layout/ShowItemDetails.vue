@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { supabase } from '@/utils/supabase.js' // Ensure supabase is correctly initialized
 
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 // Define the postId prop to receive it from the parent
 const props = defineProps({
   postId: {
@@ -121,7 +121,7 @@ onMounted(() => {
         class="rounded-lg mb-3"
         height="auto"
         width="auto"
-        :src="`https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/items/${post.image}`"
+        :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
         cover
       ></v-img>
 

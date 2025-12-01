@@ -48,7 +48,7 @@ export default {
             <br />
             <br />
             <PostItemView />
-            <!-- <DisplayPostView /> -->
+            <DisplayPostView />
           </v-row>
         </v-container>
       </v-layout>

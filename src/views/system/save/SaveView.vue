@@ -8,7 +8,7 @@ import ShowItemDetails from '../../../components/layout/ShowItemDetails.vue'
 const selectedPostDetails = ref(null)
 const isModalVisible = ref(false)
 const savedPosts = ref([])
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Show details of a specific post
 const showDetails = (post) => {
@@ -160,7 +160,7 @@ onMounted(fetchSavedPosts)
               <v-img
                 v-if="post.image"
                 height="200"
-                :src="`https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/items/${post.image}`"
+                :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
                 cover
                 :alt="post.item_name || 'Post Image'"
               />

@@ -11,7 +11,7 @@ const selectedPostDetails = ref(null)
 const isModalVisible = ref(false)
 
 // URL of the image
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Fetch current user ID
 const fetchUserId = async () => {
@@ -29,9 +29,12 @@ const fetchPostsWithUsers = async () => {
     const { data, error } = await supabase.rpc('get_posts_with_user_info') //functions for get_posts_with_user_info
     if (error) {
       console.error('Error fetching posts with user info:', error.message)
+      console.error('Full error:', error)
       return
     }
 
+    console.log('Posts data from RPC:', data)
+    
     postsWithUsers.value = data.map((post) => ({
       post_id: post.post_id,
       item_name: post.item_name,
@@ -44,6 +47,8 @@ const fetchPostsWithUsers = async () => {
       full_name: post.full_name,
       avatar_url: post.avatar_url
     }))
+    
+    console.log('Mapped posts:', postsWithUsers.value)
   } catch (err) {
     console.error('Unexpected error fetching posts with user info:', err.message)
   }
@@ -109,6 +114,9 @@ onMounted(async () => {
   await fetchPostsWithUsers()
   await fetchSavedPosts()
 })
+
+// Listen for profile updates to refresh posts
+window.addEventListener('profile-updated', fetchPostsWithUsers)
 </script>
 
 <template>
@@ -166,7 +174,7 @@ onMounted(async () => {
           <v-img
             v-if="post.image"
             height="200"
-            :src="`https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/items/${post.image}`"
+            :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
             cover
             :alt="post.item_name || 'Post Image'"
           />

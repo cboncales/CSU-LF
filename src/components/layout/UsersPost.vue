@@ -14,7 +14,7 @@ const full_name = ref('')
 const avatar_url = ref('')
 
 // URL for fetching the image
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Show details of a specific post
 const showDetails = (post) => {
@@ -31,7 +31,7 @@ const formActionDefault = {
 
 const formAction = ref({ ...formActionDefault })
 
-// Fetch user's details and posts only on component mount
+// Fetch user's details and posts
 const fetchUserData = async () => {
   const {
     data: { user },
@@ -43,7 +43,7 @@ const fetchUserData = async () => {
     return
   }
 
-  // Fetch the profile data (first name, last name, profile picture)
+  // Fetch the profile data directly from user metadata (real-time)
   firstName.value = user.user_metadata?.firstname
   lastName.value = user.user_metadata?.lastname
   profilePic.value = user.user_metadata?.profile_pic
@@ -85,6 +85,9 @@ const deletePost = async (post) => {
 
 
 onMounted(fetchUserData) // Fetch user data and posts when the component is mounted
+
+// Listen for profile updates from other components
+window.addEventListener('profile-updated', fetchUserData)
 
 ///edit the post
 const editPostData = ref(null) // Holds the post data to edit
@@ -239,7 +242,7 @@ const uploadImage = async (file) => {
           <v-img
             v-if="post.image"
             height="200"
-            :src="`https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/items/${post.image}`"
+            :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
             cover
             :alt="post.item_name || 'Post Image'"
           />

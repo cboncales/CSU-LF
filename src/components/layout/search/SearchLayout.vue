@@ -6,7 +6,7 @@ import { supabase } from '@/utils/supabase.js'
 const searchQuery = ref('') // User's search input
 const posts = ref([]) // Data from Supabase
 // URL of the image
-const profileUrl = 'https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/images/'
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 const fetchPosts = async () => {
   const { data, error } = await supabase
@@ -33,6 +33,9 @@ const filteredPosts = computed(() => {
 onMounted(() => {
   fetchPosts()
 })
+
+// Listen for profile updates to refresh posts
+window.addEventListener('profile-updated', fetchPosts)
 </script>
 
 <template>
@@ -119,7 +122,7 @@ onMounted(() => {
         <v-img
           v-if="post.image"
           height="200"
-          :src="`https://bvflfwricxabodytryee.supabase.co/storage/v1/object/public/items/${post.image}`"
+          :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
           cover
           :alt="post.item_name || 'Post Image'"
         />
