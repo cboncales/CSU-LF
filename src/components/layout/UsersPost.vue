@@ -69,17 +69,64 @@ const deletePost = async (post) => {
   const confirmed = confirm('Are you sure you want to delete this post?');
   if (!confirmed) return;
 
-  // Attempt to delete the post from the database
-  const { error } = await supabase.from('posts').delete().eq('id', post.id);
+  try {
+    // Get the post ID (could be 'id' or 'post_id')
+    const postId = post.post_id || post.id;
+    
+    console.log('Deleting post with ID:', postId);
 
-  if (error) {
-    console.error('Error deleting post:', error);
-    formAction.formErrorMessage = 'Post not deleted';
-  } else {
-    // Remove the post from the `posts` array to update the UI
-    posts.value = posts.value.filter((p) => p.id !== post.id);
-    console.log('Post deleted successfully');
-    formAction.value.formSuccessMessage = 'Successfully Deleted';
+    // Get the current user to verify ownership
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      formAction.value.formErrorMessage = 'User not authenticated';
+      return;
+    }
+
+    // Delete from all related tables first
+    // 1. Delete from saved_posts
+    const { error: savedPostsError } = await supabase
+      .from('saved_posts')
+      .delete()
+      .eq('post_id', postId);
+
+    if (savedPostsError) {
+      console.error('Error deleting saved posts references:', savedPostsError);
+    }
+
+    // 2. Delete from logs if it references posts
+    const { error: logsError } = await supabase
+      .from('logs')
+      .delete()
+      .eq('table_name', 'posts')
+      .eq('user_id', user.id);
+
+    if (logsError) {
+      console.error('Error deleting logs references:', logsError);
+    }
+
+    // Add a delay to ensure all deletions are processed
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Finally, delete the post itself
+    const { error: postError } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId)
+      .eq('user_id', user.id); // Extra safety: only delete if owned by user
+
+    if (postError) {
+      console.error('Error deleting post:', postError);
+      formAction.value.formErrorMessage = 'Post not deleted: ' + postError.message;
+    } else {
+      // Remove the post from the `posts` array to update the UI
+      posts.value = posts.value.filter((p) => (p.post_id || p.id) !== postId);
+      console.log('Post deleted successfully');
+      formAction.value.formSuccessMessage = 'Successfully Deleted';
+    }
+  } catch (error) {
+    console.error('Unexpected error during deletion:', error);
+    formAction.value.formErrorMessage = 'An unexpected error occurred';
   }
 };
 
@@ -249,10 +296,6 @@ const uploadImage = async (file) => {
           
           <!-- Post Content -->
           <v-card-text class="pt-4 pb-3">
-            <div class="post-item-badge mb-2">
-              <v-icon size="small" color="green-darken-2" class="mr-1">mdi-tag</v-icon>
-              <span class="text-caption text-grey-darken-1">Item Found</span>
-            </div>
             <h3 class="text-h6 font-weight-bold text-green-darken-3 mb-2">
               {{ post.item_name }}
             </h3>

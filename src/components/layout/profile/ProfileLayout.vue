@@ -355,58 +355,92 @@ onMounted(() => {
   </v-dialog>
 
   <!-- Modal for Create Post -->
-  <v-dialog v-model="showModal" max-width="500px">
-    <v-card class="rounded-xl">
-      <div class="modal-gradient pa-6">
-        <h2 class="text-h5 font-weight-bold text-white text-center">Create Post</h2>
+  <v-dialog v-model="showModal" max-width="600px" persistent>
+    <v-card class="rounded-xl overflow-hidden">
+      <!-- Header -->
+      <div class="modal-gradient pa-5">
+        <div class="d-flex align-center">
+          <v-icon size="32" color="white" class="mr-3">mdi-plus-circle-outline</v-icon>
+          <div>
+            <h2 class="text-h5 text-white font-weight-bold mb-0">Create New Post</h2>
+            <p class="text-body-2 text-white text-opacity-90 mb-0">Share a found item with the community</p>
+          </div>
+        </div>
       </div>
-      <v-card-text class="pt-6 pb-4 px-6">
+
+      <!-- Form Content -->
+      <v-card-text class="pa-6">
         <v-form>
-          <v-text-field
-            v-model="item_name"
-            label="Item Name"
-            variant="outlined"
-            density="comfortable"
-            class="mb-2"
-            :rules="[requiredValidator]"
-          />
-          <v-file-input
-            v-model="image"
-            label="Upload Image"
-            accept="image/*"
-            variant="outlined"
-            density="comfortable"
-            prepend-icon="mdi-camera"
-            class="mb-2"
-            :rules="[requiredValidator]"
-          />
-          <v-textarea
-            v-model="description"
-            label="Description"
-            variant="outlined"
-            density="comfortable"
-            rows="3"
-            :rules="[requiredValidator]"
-          />
+          <div class="mb-4">
+            <label class="text-body-2 font-weight-medium text-grey-darken-2 mb-2 d-block">Item Name</label>
+            <v-text-field
+              v-model="item_name"
+              placeholder="What did you find?"
+              variant="outlined"
+              density="comfortable"
+              rounded="lg"
+              color="green-darken-3"
+              :rules="[requiredValidator]"
+              hide-details="auto"
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="text-body-2 font-weight-medium text-grey-darken-2 mb-2 d-block">Upload Image</label>
+            <v-file-input
+              v-model="image"
+              placeholder="Choose an image"
+              accept="image/*"
+              variant="outlined"
+              density="comfortable"
+              rounded="lg"
+              color="green-darken-3"
+              prepend-icon=""
+              prepend-inner-icon="mdi-camera"
+              :rules="[requiredValidator]"
+              hide-details="auto"
+            />
+          </div>
+
+          <div class="mb-2">
+            <label class="text-body-2 font-weight-medium text-grey-darken-2 mb-2 d-block">Description</label>
+            <v-textarea
+              v-model="description"
+              placeholder="Describe the item and where you found it..."
+              variant="outlined"
+              rounded="lg"
+              color="green-darken-3"
+              rows="4"
+              :rules="[requiredValidator]"
+              hide-details="auto"
+            />
+          </div>
         </v-form>
       </v-card-text>
-      <v-card-actions class="px-6 pb-6">
-        <v-btn 
-          variant="outlined" 
-          color="grey-darken-1" 
-          class="flex-grow-1 rounded-pill text-none"
+
+      <!-- Actions -->
+      <v-card-actions class="pa-5 pt-0">
+        <v-btn
+          variant="outlined"
+          color="grey-darken-1"
+          rounded="lg"
+          size="large"
+          class="font-weight-medium flex-grow-1"
           @click="handleCancel"
         >
           Cancel
         </v-btn>
-        <v-btn 
-          :disabled="formAction.formProcess" 
-          variant="flat" 
-          color="green-darken-2" 
-          class="flex-grow-1 rounded-pill text-none"
+        <v-btn
+          variant="flat"
+          color="green-darken-3"
+          rounded="lg"
+          size="large"
+          class="font-weight-bold text-white flex-grow-1"
+          :disabled="formAction.formProcess"
+          :loading="formAction.formProcess"
           @click="handlePost"
         >
-          Post
+          Create Post
         </v-btn>
       </v-card-actions>
     </v-card>

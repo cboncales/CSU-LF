@@ -214,7 +214,7 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
               target="_blank"
               rel="noopener"
             >
-              Contact Owner
+              Send Message
             </v-btn>
           </v-card-actions>
         </v-card>

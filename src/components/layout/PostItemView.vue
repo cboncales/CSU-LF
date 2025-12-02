@@ -156,7 +156,7 @@ onMounted(() => {
     <v-row justify="center">
       <v-col cols="12">
         <v-card
-          class="create-post-card rounded-xl mb-4 overflow-hidden"
+          class="create-post-card rounded-xl overflow-hidden"
           elevation="2"
         >
           <div class="pa-5">
