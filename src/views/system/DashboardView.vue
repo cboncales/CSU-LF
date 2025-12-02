@@ -44,9 +44,6 @@ export default {
         <v-container fluid>
           <v-row>
             <!-- Main Content -->
-            <br />
-            <br />
-            <br />
             <PostItemView />
             <DisplayPostView />
           </v-row>

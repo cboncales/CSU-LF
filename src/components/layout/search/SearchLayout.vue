@@ -39,106 +39,169 @@ window.addEventListener('profile-updated', fetchPosts)
 </script>
 
 <template>
-  <br />
-  <br />
-  <v-row justify="center">
-    <v-col cols="12" sm="8" md="8">
-      <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
-        <p class="text-center ma-3 text-h5 text-light-green-darken-3">Looking for Something?</p>
-        <v-card-text class="ma-3">
-          <v-text-field
-            v-model="searchQuery"
-            :loading="loading"
-            append-inner-icon="mdi-magnify"
-            density="compact"
-            label="Search it Here!"
-            variant="outlined"
-            rounded
-            color="light-green-darken-3"
-            hide-details
-            single-line
-          ></v-text-field>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+  <v-container>
+    <!-- Search Card -->
+    <v-row justify="center" class="mt-4">
+      <v-col cols="12">
+        <v-card class="search-card rounded-xl overflow-hidden" elevation="2">
+          <div class="search-header pa-5">
+            <div class="d-flex align-center mb-3">
+              <v-icon size="32" color="white" class="mr-3">mdi-magnify</v-icon>
+              <div>
+                <h2 class="text-h6 text-white font-weight-bold mb-0">Search Lost Items</h2>
+                <p class="text-body-2 text-white text-opacity-90 mb-0">
+                  Find items reported by the community
+                </p>
+              </div>
+            </div>
+            <v-text-field
+              v-model="searchQuery"
+              placeholder="Search by item name or description..."
+              variant="outlined"
+              density="comfortable"
+              rounded="lg"
+              bg-color="white"
+              color="green-darken-3"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              single-line
+              class="search-input"
+            ></v-text-field>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
 
-  <!-- Display Search Results Only if Search Query is Not Empty -->
-  <v-row justify="center">
-    <v-col
-      v-for="post in filteredPosts"
-      :key="post.id"
-      v-if="searchQuery !== ''"
-      cols="12"
-      sm="8"
-      md="6"
-    >
-      <v-card class="rounded-xl mb-4" elevation="4">
-        <v-list-item class="pb-3">
-          <v-row class="w-100" align="center" no-gutters>
-            <!-- Post Owner Image -->
-            <v-col cols="auto">
-              <v-avatar size="50" class="mx-2" color="black">
-                <!-- Check if profile_pic exists and is not null or empty -->
-                <v-img
-                  v-if="post.profile_pic && post.profile_pic !== ''"
-                  :src="
-                    post.profile_pic.startsWith('http')
-                      ? post.profile_pic
-                      : profileUrl + post.profile_pic
-                  "
-                  alt="User Avatar and default profile"
-                  class="mx-auto"
-                  height="200"
-                  width="200"
-                />
+    <!-- Search Results -->
+    <v-row v-if="searchQuery !== ''" class="mt-2">
+      <v-col cols="12">
+        <p class="text-body-2 text-grey-darken-1 mb-3">
+          {{ filteredPosts.length }} result{{ filteredPosts.length !== 1 ? 's' : '' }} found
+        </p>
+      </v-col>
 
-                <!-- Fallback image if profile_pic is not available -->
-                <v-img
-                  v-else
-                  :src="post.avatar_url || 'default-avatar-url.png'"
-                  alt="google profile"
-                  class="mx-auto"
-                  height="200"
-                  width="200"
-                />
-              </v-avatar>
-            </v-col>
+      <v-col cols="12" v-for="post in filteredPosts" :key="post.post_id">
+        <v-card class="post-card rounded-xl mb-4 overflow-hidden" elevation="3">
+          <!-- Post Header -->
+          <div class="post-header pa-4 d-flex align-center">
+            <v-avatar size="56" class="mr-3 elevation-2">
+              <v-img
+                v-if="post.profile_pic && post.profile_pic !== ''"
+                :src="
+                  post.profile_pic.startsWith('http')
+                    ? post.profile_pic
+                    : profileUrl + post.profile_pic
+                "
+                alt="User Avatar"
+                cover
+              />
+              <v-img
+                v-else
+                :src="post.avatar_url || 'default-avatar-url.png'"
+                alt="Google profile"
+                cover
+              />
+            </v-avatar>
+            <div>
+              <h3 class="text-green-darken-3 font-weight-bold text-subtitle-1 mb-0">
+                {{
+                  post.firstname && post.lastname
+                    ? post.firstname + ' ' + post.lastname
+                    : post.full_name
+                }}
+              </h3>
+              <p class="text-caption text-grey-darken-1 mb-0">Found an item</p>
+            </div>
+          </div>
 
-            <!-- Post Owner Name -->
-            <v-col class="d-flex align-center">
-              <v-list-item-content>
-                <h3 class="text-light-green-darken-3 font-weight-bold pa-1">
-                  {{
-                    post.firstname && post.lastname
-                      ? post.firstname + ' ' + post.lastname
-                      : post.full_name
-                  }}
-                </h3>
-              </v-list-item-content>
-            </v-col>
-          </v-row>
-        </v-list-item>
-        <v-img
-          v-if="post.image"
-          height="200"
-          :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
-          cover
-          :alt="post.item_name || 'Post Image'"
-        />
-        <v-card-title class="text-light-green-darken-3">{{ post.item_name }}</v-card-title>
-        <v-card-text class="text-light-green-darken-3">{{ post.description }}</v-card-text>
-        <v-card-actions>
-          <v-btn
-            color="primary"
-            class="text-center"
-            :href="post.facebook_link"
-            target="_blank"
-            rel="noopener"
-            >Send Message</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+          <!-- Post Image -->
+          <div class="post-image-container">
+            <v-img
+              v-if="post.image"
+              :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
+              :alt="post.item_name || 'Post Image'"
+              contain
+              class="post-image"
+              max-height="500"
+            />
+          </div>
+
+          <!-- Post Content -->
+          <div class="pa-4">
+            <h2 class="text-h6 text-green-darken-3 font-weight-bold mb-2">{{ post.item_name }}</h2>
+            <p class="text-body-2 text-grey-darken-2 mb-3">{{ post.description }}</p>
+          </div>
+
+          <!-- Post Actions -->
+          <v-divider></v-divider>
+          <v-card-actions class="pa-3">
+            <v-spacer></v-spacer>
+            <v-btn
+              color="orange-darken-2"
+              variant="flat"
+              prepend-icon="mdi-facebook-messenger"
+              rounded="lg"
+              size="default"
+              class="font-weight-medium"
+              :href="post.facebook_link"
+              target="_blank"
+              rel="noopener"
+            >
+              Contact Owner
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Empty State -->
+    <v-row v-else class="mt-8">
+      <v-col cols="12" class="text-center">
+        <v-icon size="80" color="grey-lighten-1" class="mb-4">mdi-magnify</v-icon>
+        <h3 class="text-h6 text-grey-darken-1 mb-2">Start searching</h3>
+        <p class="text-body-2 text-grey">Enter keywords to find lost items</p>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
+
+<style scoped>
+.search-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.search-header {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+
+.search-input :deep(.v-field) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.post-header {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 1));
+}
+
+.post-image-container {
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.post-image {
+  width: 100%;
+}
+</style>

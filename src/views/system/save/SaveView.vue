@@ -29,38 +29,50 @@ const fetchSavedPosts = async () => {
       return
     }
 
-    // Call the materialized view query with the logged-in user's ID
-    const { data, error } = await supabase
-      .from('saved_posts_mv') // Query the materialized view
-      .select('*')
-      .eq('saved_by_user_id', user.id) // Filter by user ID
+    // Query saved_posts table and join with posts to get full post details
+    const { data: savedPostsData, error: savedError } = await supabase
+      .from('saved_posts')
+      .select('post_id')
+      .eq('user_id', user.id)
 
-    if (error) {
-      console.error('Error fetching saved posts:', error.message)
-    } else {
-      savedPosts.value = data.map((savedPost) => ({
-        post_id: savedPost.post_id,
-        item_name: savedPost.item_name,
-        description: savedPost.description,
-        image: savedPost.image,
+    if (savedError) {
+      console.error('Error fetching saved posts:', savedError.message)
+      return
+    }
+
+    if (savedPostsData.length === 0) {
+      savedPosts.value = []
+      return
+    }
+
+    // Get full post details using RPC function
+    const { data: postsData, error: postsError } = await supabase.rpc('get_posts_with_user_info')
+
+    if (postsError) {
+      console.error('Error fetching posts details:', postsError.message)
+      return
+    }
+
+    // Filter to only include saved posts
+    const savedPostIds = savedPostsData.map(sp => sp.post_id)
+    savedPosts.value = postsData
+      .filter(post => savedPostIds.includes(post.post_id))
+      .map((post) => ({
+        post_id: post.post_id,
+        item_name: post.item_name,
+        description: post.description,
+        image: post.image,
         post_owner: {
-          first_name: savedPost.post_owner_firstname,
-          last_name: savedPost.post_owner_lastname,
-          profile_pic: savedPost.post_owner_profile_pic,
-          facebook_link: savedPost.post_owner_facebook_link,
-          full_name: savedPost.post_owner_full_name,
-          avatar_url: savedPost.post_owner_avatar_url
-        },
-        saved_by: {
-          first_name: savedPost.saved_by_firstname,
-          last_name: savedPost.saved_by_lastname,
-          profile_pic: savedPost.saved_by_profile_pic,
-          facebook_link: savedPost.saved_by_facebook_link,
-          full_name: savedPost.saved_by_full_name,
-          avatar_url: savedPost.saved_by_avatar_url
+          first_name: post.firstname,
+          last_name: post.lastname,
+          profile_pic: post.profile_pic,
+          facebook_link: post.facebook_link,
+          full_name: post.full_name,
+          avatar_url: post.avatar_url
         }
       }))
-    }
+
+    console.log('Saved posts fetched:', savedPosts.value)
   } catch (err) {
     console.error('Unexpected error fetching saved posts:', err.message)
   }
@@ -69,8 +81,21 @@ const fetchSavedPosts = async () => {
 // Method to remove a post from saved
 const removeFromSaved = async (postId) => {
   try {
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      console.error('User not logged in')
+      return
+    }
+
     // Delete the post from saved_posts table
-    const { error } = await supabase.from('saved_posts').delete().eq('post_id', postId)
+    const { error } = await supabase
+      .from('saved_posts')
+      .delete()
+      .eq('post_id', postId)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error removing post from saved:', error.message)
@@ -93,115 +118,110 @@ onMounted(fetchSavedPosts)
     <template #content>
       <v-container>
         <SaveLayout />
-        <!-- Display message when there are no saved posts and have -->
-        <v-row justify="center">
-          <v-col cols="12" sm="12" md="8" class=""
-            ><v-img
-              v-if="savedPosts.length === 0"
-              class=""
-              src="/images/empty.svg"
-              width="800"
-            ></v-img>
-            <!-- <v-divider v-else>Saved Posts</v-divider> -->
-            <v-divider>{{ savedPosts.length === 0 ? 'No Saved Posts' : 'Saved Posts' }}</v-divider>
+        
+        <!-- Empty State -->
+        <v-row v-if="savedPosts.length === 0" justify="center" class="mt-8">
+          <v-col cols="12" class="text-center">
+            <v-img src="/images/empty.svg" max-width="400" class="mx-auto mb-4"></v-img>
+            <h3 class="text-h5 text-grey-darken-1 mb-2">No Saved Posts Yet</h3>
+            <p class="text-body-2 text-grey">Save posts to view them here later</p>
           </v-col>
         </v-row>
-        <v-row dense>
-          <v-col cols="12" sm="8" md="6" v-for="post in savedPosts" :key="post.post_id">
+
+        <!-- Saved Posts -->
+        <v-row v-else dense>
+          <v-col cols="12" v-for="post in savedPosts" :key="post.post_id">
             <v-card
-              class="mb-4 rounded-xl"
-              max-width="4000"
-              outlined
-              elevation="10"
+              class="post-card rounded-xl mb-4 overflow-hidden"
+              elevation="3"
               @click="showDetails(post)"
             >
-              <v-list-item class="pb-2">
-                <v-row class="w-100" align="center" no-gutters>
-                  <!-- Post Owner Image -->
-                  <v-col cols="auto">
-                    <v-avatar size="50" class="mx-2" color="black">
-                      <v-img
-                        v-if="post.post_owner.profile_pic && post.post_owner.profile_pic !== ''"
-                        :src="
-                          post.post_owner.profile_pic.startsWith('http')
-                            ? post.post_owner.profile_pic
-                            : profileUrl + post.post_owner.profile_pic
-                        "
-                        alt="Post Owner Picture"
-                        class="mx-auto"
-                        height="200"
-                        width="200"
-                      />
-                      <v-img
-                        v-else
-                        :src="post.post_owner.avatar_url || '/images/profile-default.png'"
-                        alt="Default Avatar"
-                        class="mx-auto"
-                        height="200"
-                        width="200"
-                      />
-                    </v-avatar>
-                  </v-col>
+              <!-- Post Header -->
+              <div class="post-header pa-4 d-flex align-center">
+                <v-avatar size="56" class="mr-3 elevation-2">
+                  <v-img
+                    v-if="post.post_owner.profile_pic && post.post_owner.profile_pic !== ''"
+                    :src="
+                      post.post_owner.profile_pic.startsWith('http')
+                        ? post.post_owner.profile_pic
+                        : profileUrl + post.post_owner.profile_pic
+                    "
+                    alt="User Avatar"
+                    cover
+                  />
+                  <v-img
+                    v-else
+                    :src="post.post_owner.avatar_url || '/images/profile-default.png'"
+                    alt="Default Avatar"
+                    cover
+                  />
+                </v-avatar>
+                <div>
+                  <h3 class="text-green-darken-3 font-weight-bold text-subtitle-1 mb-0">
+                    {{
+                      post.post_owner.first_name && post.post_owner.last_name
+                        ? post.post_owner.first_name + ' ' + post.post_owner.last_name
+                        : post.post_owner.full_name
+                    }}
+                  </h3>
+                  <p class="text-caption text-grey-darken-1 mb-0">Found an item</p>
+                </div>
+              </div>
 
-                  <!-- Post Owner Name -->
-                  <v-col class="d-flex align-center">
-                    <v-list-item-content>
-                      <h3 class="text-light-green-darken-3 font-weight-bold">
-                        {{
-                          post.post_owner.first_name && post.post_owner.last_name
-                            ? post.post_owner.first_name + ' ' + post.post_owner.last_name
-                            : post.post_owner.full_name
-                        }}
-                      </h3>
-                    </v-list-item-content>
-                  </v-col>
-                </v-row>
-              </v-list-item>
-              <v-img
-                v-if="post.image"
-                height="200"
-                :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
-                cover
-                :alt="post.item_name || 'Post Image'"
-              />
-              <v-card-title>{{ post.item_name }}</v-card-title>
-              <v-card-subtitle>{{ post.description }}</v-card-subtitle>
+              <!-- Post Image -->
+              <div class="post-image-container">
+                <v-img
+                  v-if="post.image"
+                  :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
+                  :alt="post.item_name || 'Post Image'"
+                  contain
+                  class="post-image"
+                  max-height="500"
+                />
+              </div>
 
-              <v-card-actions>
-                <v-row class="w-100" justify="space-between">
-                  <!-- "Remove" button -->
-                  <v-col cols="auto">
-                    <v-btn
-                      color="primary"
-                      @click="removeFromSaved(post.post_id)"
-                      class="text-center"
-                    >
-                      Remove
-                    </v-btn>
-                  </v-col>
+              <!-- Post Content -->
+              <div class="pa-4">
+                <h2 class="text-h6 text-green-darken-3 font-weight-bold mb-2">{{ post.item_name }}</h2>
+                <p class="text-body-2 text-grey-darken-2 mb-3">{{ post.description }}</p>
+              </div>
 
-                  <!-- "Message" button -->
-                  <v-col cols="auto">
-                    <v-btn
-                      color="primary"
-                      :href="post.post_owner.facebook_link"
-                      target="_blank"
-                      rel="noopener"
-                      class="text-center"
-                    >
-                      Message
-                    </v-btn>
-                  </v-col>
-                </v-row>
+              <!-- Post Actions -->
+              <v-divider></v-divider>
+              <v-card-actions class="pa-3">
+                <v-btn
+                  color="red-darken-2"
+                  variant="flat"
+                  prepend-icon="mdi-bookmark-remove"
+                  rounded="lg"
+                  size="default"
+                  class="font-weight-medium"
+                  @click.stop="removeFromSaved(post.post_id)"
+                >
+                  Remove
+                </v-btn>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="orange-darken-2"
+                  variant="flat"
+                  prepend-icon="mdi-facebook-messenger"
+                  rounded="lg"
+                  size="default"
+                  class="font-weight-medium"
+                  :href="post.post_owner.facebook_link"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Contact Owner
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
 
-        <!-- Modal for Post Details to resolve the undefined post-id -->
+        <!-- Modal for Post Details -->
         <v-dialog v-model="isModalVisible" max-width="600">
           <template v-slot:default>
-            <!-- Pass postId from selectedPostDetails to ShowItemDetails -->
             <ShowItemDetails :postId="selectedPostDetails?.post_id" />
           </template>
         </v-dialog>
@@ -209,3 +229,32 @@ onMounted(fetchSavedPosts)
     </template>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.post-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.post-header {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 1));
+}
+
+.post-image-container {
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.post-image {
+  width: 100%;
+}
+</style>
