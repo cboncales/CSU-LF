@@ -11,7 +11,7 @@ export default {
 </script>
 
 <template>
-  <v-layout>
+  <v-layout class="dashboard-bg">
     <v-container fluid class="pa-4">
       <v-row class="fill-height">
         <!-- Side Navigation -->
@@ -38,6 +38,11 @@ export default {
 </template>
 
 <style scoped>
+.dashboard-bg {
+  background-color: #ebedf0;
+  min-height: 100vh;
+}
+
 .sticky-sidebar {
   position: sticky;
   top: 20px;

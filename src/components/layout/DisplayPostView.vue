@@ -154,14 +154,16 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
           </div>
 
           <!-- Post Image -->
-          <v-img
-            v-if="post.image"
-            :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
-            :alt="post.item_name || 'Post Image'"
-            cover
-            class="post-image"
-            height="400"
-          />
+          <div class="post-image-container">
+            <v-img
+              v-if="post.image"
+              :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
+              :alt="post.item_name || 'Post Image'"
+              contain
+              class="post-image"
+              max-height="500"
+            />
+          </div>
 
           <!-- Post Content -->
           <div class="pa-4">
@@ -241,7 +243,15 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 1));
 }
 
-.post-image {
+.post-image-container {
   background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.post-image {
+  width: 100%;
 }
 </style>

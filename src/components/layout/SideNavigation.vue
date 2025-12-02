@@ -73,7 +73,14 @@ window.addEventListener('profile-updated', fetchUserDetails)
   <div class="side-nav-card rounded-xl shadow-lg overflow-hidden h-full">
     <!-- Profile Section -->
     <div class="profile-header text-center py-6 px-4">
-      <v-img src="/images/logo.png" max-width="60" contain class="mx-auto mb-2" />
+      <div class="d-flex align-center justify-center mb-3">
+        <v-img src="/images/logo.png" max-width="50" contain class="mr-2" />
+        <div class="text-left">
+          <p class="text-white text-caption font-weight-bold mb-0" style="line-height: 1.2;">
+            College of Computing<br>and Information Sciences
+          </p>
+        </div>
+      </div>
       <v-avatar size="80" class="mx-auto mb-2 elevation-4" color="white">
         <v-img
           v-if="profile_pic && typeof profile_pic === 'string' && profile_pic !== '' && profile_pic !== null"
