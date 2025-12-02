@@ -1,10 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { supabase } from '@/utils/supabase.js'
+import ChatModal from '../../common/ChatModal.vue'
 
 // State variables
 const searchQuery = ref('') // User's search input
 const posts = ref([]) // Data from Supabase
+const showChatModal = ref(false)
+const selectedChatPost = ref(null)
 // URL of the image
 const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
@@ -50,6 +53,12 @@ const formatDate = (dateString) => {
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
   
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Open chat modal
+const openChat = (post) => {
+  selectedChatPost.value = post
+  showChatModal.value = true
 }
 </script>
 
@@ -154,15 +163,13 @@ const formatDate = (dateString) => {
             <v-btn
               color="orange-darken-2"
               variant="flat"
-              prepend-icon="mdi-facebook-messenger"
+              prepend-icon="mdi-message-text"
               rounded="lg"
               size="default"
               class="font-weight-medium"
-              :href="post.facebook_link"
-              target="_blank"
-              rel="noopener"
+              @click.stop="openChat(post)"
             >
-              Send Message
+              Contact
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -178,6 +185,15 @@ const formatDate = (dateString) => {
       </v-col>
     </v-row>
   </v-container>
+
+  <!-- Chat Modal -->
+  <ChatModal
+    v-model="showChatModal"
+    :post-id="selectedChatPost?.post_id"
+    :post-owner-id="selectedChatPost?.user_id"
+    :post-owner-name="selectedChatPost?.firstname && selectedChatPost?.lastname ? selectedChatPost.firstname + ' ' + selectedChatPost.lastname : selectedChatPost?.full_name"
+    :post-title="selectedChatPost?.item_name"
+  />
 </template>
 
 <style scoped>

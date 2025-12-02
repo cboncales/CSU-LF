@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { supabase } from '@/utils/supabase.js'
 import ShowItemDetails from './ShowItemDetails.vue'
+import ChatModal from '../common/ChatModal.vue'
 
 const postsWithUsers = ref([])
 const savedPosts = ref([]) // Track saved posts
@@ -9,6 +10,8 @@ const userId = ref(null) // Current user's ID
 const showSuccessModal = ref(false) // Controls success modal
 const selectedPostDetails = ref(null)
 const isModalVisible = ref(false)
+const showChatModal = ref(false)
+const selectedChatPost = ref(null)
 
 // URL of the image
 const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
@@ -46,7 +49,8 @@ const fetchPostsWithUsers = async () => {
       profile_pic: post.profile_pic,
       full_name: post.full_name,
       avatar_url: post.avatar_url,
-      created_at: post.created_at
+      created_at: post.created_at,
+      user_id: post.user_id
     }))
     
     console.log('Mapped posts:', postsWithUsers.value)
@@ -123,13 +127,62 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+// Open chat modal
+const openChat = (post) => {
+  selectedChatPost.value = {
+    post_id: post.post_id,
+    user_id: post.user_id,
+    firstname: post.firstname,
+    lastname: post.lastname,
+    full_name: post.full_name,
+    item_name: post.item_name
+  }
+  showChatModal.value = true
+}
+
+// Handle auto-popup for incoming messages
+const handleNewMessageReceived = async (event) => {
+  const newMessage = event.detail;
+  
+  // Fetch the post details for this message
+  const { data: postData, error: postError } = await supabase
+    .rpc('get_posts_with_user_info')
+  
+  if (postError) {
+    console.error('Error fetching post for auto-popup:', postError);
+    return;
+  }
+  
+  // Find the post that matches the message's post_id
+  const post = postData.find(p => p.post_id === newMessage.post_id);
+  
+  if (post && newMessage.sender_id !== userId.value) {
+    // Auto-open chat modal with the sender's post
+    selectedChatPost.value = {
+      post_id: post.post_id,
+      user_id: newMessage.sender_id,
+      firstname: post.firstname,
+      lastname: post.lastname,
+      full_name: post.full_name,
+      item_name: post.item_name
+    };
+    showChatModal.value = true;
+  }
+}
 
 // Fetch data on component mount
 onMounted(async () => {
   await fetchUserId()
   await fetchPostsWithUsers()
   await fetchSavedPosts()
-})
+  
+  // Listen for new message events for auto-popup
+  window.addEventListener('new-message-received', handleNewMessageReceived);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('new-message-received', handleNewMessageReceived);
+});
 
 // Listen for profile updates to refresh posts
 window.addEventListener('profile-updated', fetchPostsWithUsers)
@@ -206,15 +259,13 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
             <v-btn
               color="orange-darken-2"
               variant="flat"
-              prepend-icon="mdi-facebook-messenger"
+              prepend-icon="mdi-message-text"
               rounded="lg"
               size="default"
               class="font-weight-medium"
-              :href="post.facebook_link"
-              target="_blank"
-              rel="noopener"
+              @click.stop="openChat(post)"
             >
-              Send Message
+              Contact
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -240,6 +291,16 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
             <ShowItemDetails :postId="selectedPostDetails?.post_id" />
           </template>
         </v-dialog>
+
+    <!-- Chat Modal -->
+    <ChatModal
+      v-model="showChatModal"
+      :post-id="selectedChatPost?.post_id"
+      :post-owner-id="selectedChatPost?.user_id"
+      :post-owner-name="selectedChatPost?.firstname && selectedChatPost?.lastname ? selectedChatPost.firstname + ' ' + selectedChatPost.lastname : selectedChatPost?.full_name"
+      :post-owner-avatar="selectedChatPost?.profile_pic || selectedChatPost?.avatar_url"
+      :post-title="selectedChatPost?.item_name"
+    />
   </v-container>
 </template>
 

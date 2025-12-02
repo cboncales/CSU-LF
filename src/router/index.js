@@ -10,6 +10,7 @@ import SaveView from '@/views/system/save/SaveView.vue'
 import AboutView from '@/views/system/about/AboutView.vue'
 import SearchView from '@/views/system/search/SearchView.vue'
 import ActivityView from '@/views/system/activity/ActivityView.vue'
+import MessagesView from '@/views/system/messages/MessagesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +43,11 @@ const router = createRouter({
       path: '/system/save',
       name: 'save',
       component: SaveView
+    },
+    {
+      path: '/system/messages',
+      name: 'messages',
+      component: MessagesView
     },
     {
       path: '/system/profile',
@@ -82,6 +88,11 @@ router.beforeEach(async (to, from, next) => {
     path: to.path
   })
 
+  // Redirect unknown routes to not-found page first
+  if (!to.matched.length) {
+    return next({ name: 'not-found' })
+  }
+
   // Redirect logged-in users away from auth routes
   if (isLoggedIn && ['login', 'register', 'splash'].includes(to.name)) {
     return next({ name: 'dashboard' })
@@ -92,12 +103,8 @@ router.beforeEach(async (to, from, next) => {
     return next({ name: 'login' })
   }
 
-  // Redirect unknown routes to not-found page (handled by Vue Router)
-  if (!to.matched.length) {
-    return next({ name: 'not-found' })
-  }
-
-  next() // Allow the route to proceed
+  // Allow the route to proceed
+  next()
 })
 
 export default router

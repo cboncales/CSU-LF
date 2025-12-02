@@ -1,8 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import ShowItemDetails from './ShowItemDetails.vue'
 import AlertNotification from '../common/AlertNotification.vue'
 import { supabase } from '@/utils/supabase.js'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const posts = ref([]) // Array to store posts
 const firstName = ref('') // First name of the user
@@ -132,6 +135,13 @@ const deletePost = async (post) => {
 
 
 onMounted(fetchUserData) // Fetch user data and posts when the component is mounted
+
+// Watch for route changes to refetch user data
+watch(() => route.name, (newRoute) => {
+  if (newRoute === 'profile') {
+    fetchUserData()
+  }
+})
 
 // Listen for profile updates from other components
 window.addEventListener('profile-updated', fetchUserData)

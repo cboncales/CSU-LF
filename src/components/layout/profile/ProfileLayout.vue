@@ -1,12 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { supabase } from '@/utils/supabase'
 import UsersPost from '@/components/layout/UsersPost.vue' // Adjust the path as necessary
 import AlertNotification from '../../common/AlertNotification.vue'
 import { requiredValidator } from '../../../utils/validators' // Assuming this is defined correctly
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 // Function to navigate
 const navigateTo = (routeName) => {
@@ -211,6 +212,13 @@ const updateProfile = async () => {
 
 onMounted(() => {
   fetchUserDetails()
+})
+
+// Watch for route changes to refetch user details
+watch(() => route.name, (newRoute) => {
+  if (newRoute === 'profile') {
+    fetchUserDetails()
+  }
 })
 </script>
 

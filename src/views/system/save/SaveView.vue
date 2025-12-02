@@ -4,10 +4,13 @@ import { supabase } from '@/utils/supabase'
 import DashboardLayout from '@/components/layout/DashboardLayout.vue'
 import SaveLayout from '@/components/layout/save/SaveLayout.vue'
 import ShowItemDetails from '../../../components/layout/ShowItemDetails.vue'
+import ChatModal from '@/components/common/ChatModal.vue'
 
 const selectedPostDetails = ref(null)
 const isModalVisible = ref(false)
 const savedPosts = ref([])
+const showChatModal = ref(false)
+const selectedChatPost = ref(null)
 const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
 
 // Show details of a specific post
@@ -64,6 +67,7 @@ const fetchSavedPosts = async () => {
         image: post.image,
         created_at: post.created_at,
         post_owner: {
+          user_id: post.user_id,
           first_name: post.firstname,
           last_name: post.lastname,
           profile_pic: post.profile_pic,
@@ -123,6 +127,12 @@ const formatDate = (dateString) => {
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
   
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Open chat modal
+const openChat = (post) => {
+  selectedChatPost.value = post
+  showChatModal.value = true
 }
 
 // Fetch data on component mount
@@ -220,15 +230,13 @@ onMounted(fetchSavedPosts)
                 <v-btn
                   color="orange-darken-2"
                   variant="flat"
-                  prepend-icon="mdi-facebook-messenger"
+                  prepend-icon="mdi-message-text"
                   rounded="lg"
                   size="default"
                   class="font-weight-medium"
-                  :href="post.post_owner.facebook_link"
-                  target="_blank"
-                  rel="noopener"
+                  @click.stop="openChat(post)"
                 >
-                  Send Message
+                  Contact
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -241,6 +249,15 @@ onMounted(fetchSavedPosts)
             <ShowItemDetails :postId="selectedPostDetails?.post_id" />
           </template>
         </v-dialog>
+
+        <!-- Chat Modal -->
+        <ChatModal
+          v-model="showChatModal"
+          :post-id="selectedChatPost?.post_id"
+          :post-owner-id="selectedChatPost?.post_owner?.user_id"
+          :post-owner-name="selectedChatPost?.post_owner?.first_name && selectedChatPost?.post_owner?.last_name ? selectedChatPost.post_owner.first_name + ' ' + selectedChatPost.post_owner.last_name : selectedChatPost?.post_owner?.full_name"
+          :post-title="selectedChatPost?.item_name"
+        />
       </v-container>
     </template>
   </DashboardLayout>
