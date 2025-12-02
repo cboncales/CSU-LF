@@ -220,10 +220,14 @@ onMounted(() => {
 
   <v-row justify="center">
     <v-col cols="12" sm="12" md="8">
-      <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
-        <v-list class="text-center pt-5">
+      <v-card class="rounded-xl mb-4 overflow-hidden" max-width="1000" elevation="4">
+        <!-- Gradient Header -->
+        <div class="profile-header">
+          <div class="profile-gradient"></div>
+        </div>
+        <v-list class="text-center profile-content">
           <div class="profile-section">
-            <v-avatar size="150" class="mx-auto" color="black">
+            <v-avatar size="150" class="mx-auto profile-avatar" color="white">
               <!-- If profile_pic exists and is not null or empty, or if it's a file name -->
               <v-img
                 v-if="profile_pic && profile_pic !== '' && profile_pic !== null"
@@ -244,14 +248,15 @@ onMounted(() => {
                 width="200"
               />
             </v-avatar>
-            <p class="text-center font-weight-bold mt-2 text-light-green-darken-3">
+            <h2 class="text-center font-weight-bold mt-4 mb-1 text-h5 text-green-darken-3">
               {{ firstName && lastName ? firstName + ' ' + lastName : full_name }}
-            </p>
+            </h2>
+            <p class="text-caption text-grey-darken-1 mb-4">Student Profile</p>
           </div>
         </v-list>
 
         <!-- Center the Facebook button -->
-        <v-card-actions class="text-center justify-center">
+        <v-card-actions class="text-center justify-center pb-2">
           <v-btn
             class="rounded-pill bg-light-green-darken-3"
             icon="mdi-facebook"
@@ -291,31 +296,60 @@ onMounted(() => {
   <!-- Modal for editing profile -->
   <v-dialog v-model="showEditModal" max-width="500px">
     <v-card class="rounded-xl">
-      <v-card-title class="text-center">Edit Profile</v-card-title>
-      <v-card-text>
+      <div class="modal-gradient pa-6">
+        <h2 class="text-h5 font-weight-bold text-white text-center">Edit Profile</h2>
+      </div>
+      <v-card-text class="pt-6 pb-4 px-6">
         <v-form>
-          <v-text-field v-model="firstName" label="First Name" variant="solo" rounded outlined />
-          <v-text-field v-model="lastName" label="Last Name" variant="solo" rounded outlined />
+          <v-text-field 
+            v-model="firstName" 
+            label="First Name" 
+            variant="outlined" 
+            density="comfortable"
+            class="mb-2"
+          />
+          <v-text-field 
+            v-model="lastName" 
+            label="Last Name" 
+            variant="outlined" 
+            density="comfortable"
+            class="mb-2"
+          />
           <v-file-input
             v-model="profile_pic"
             label="Upload Profile Image"
             accept="image/*"
-            variant="solo"
-            rounded
-            outlined
+            variant="outlined"
+            density="comfortable"
+            prepend-icon="mdi-camera"
+            class="mb-2"
           />
           <v-text-field
             v-model="facebook_link"
             label="Facebook Profile Link"
-            variant="solo"
-            rounded
-            outlined
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-facebook"
           />
         </v-form>
       </v-card-text>
-      <v-card-actions>
-        <v-btn text color="red" @click="showEditModal = false">Cancel</v-btn>
-        <v-btn text color="green" @click="updateProfile">Save Changes</v-btn>
+      <v-card-actions class="px-6 pb-6">
+        <v-btn 
+          variant="outlined" 
+          color="grey-darken-1" 
+          class="flex-grow-1 rounded-pill text-none"
+          @click="showEditModal = false"
+        >
+          Cancel
+        </v-btn>
+        <v-btn 
+          variant="flat" 
+          color="green-darken-2" 
+          class="flex-grow-1 rounded-pill text-none"
+          @click="updateProfile"
+        >
+          Save Changes
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -323,42 +357,55 @@ onMounted(() => {
   <!-- Modal for Create Post -->
   <v-dialog v-model="showModal" max-width="500px">
     <v-card class="rounded-xl">
-      <v-card-title class="text-center">
-        <span class="text-h5 pa-2">Create Post</span>
-      </v-card-title>
-      <v-card-text>
+      <div class="modal-gradient pa-6">
+        <h2 class="text-h5 font-weight-bold text-white text-center">Create Post</h2>
+      </div>
+      <v-card-text class="pt-6 pb-4 px-6">
         <v-form>
           <v-text-field
             v-model="item_name"
             label="Item Name"
-            variant="solo"
-            rounded
-            outlined
+            variant="outlined"
+            density="comfortable"
+            class="mb-2"
             :rules="[requiredValidator]"
           />
           <v-file-input
             v-model="image"
             label="Upload Image"
             accept="image/*"
-            variant="solo"
-            rounded
-            outlined
+            variant="outlined"
+            density="comfortable"
+            prepend-icon="mdi-camera"
+            class="mb-2"
             :rules="[requiredValidator]"
           />
           <v-textarea
             v-model="description"
             label="Description"
-            variant="solo"
-            rounded
-            outlined
+            variant="outlined"
+            density="comfortable"
             rows="3"
             :rules="[requiredValidator]"
           />
         </v-form>
       </v-card-text>
-      <v-card-actions>
-        <v-btn text color="red" @click="handleCancel">Cancel</v-btn>
-        <v-btn :disabled="formAction.formProcess" text color="green" @click="handlePost">
+      <v-card-actions class="px-6 pb-6">
+        <v-btn 
+          variant="outlined" 
+          color="grey-darken-1" 
+          class="flex-grow-1 rounded-pill text-none"
+          @click="handleCancel"
+        >
+          Cancel
+        </v-btn>
+        <v-btn 
+          :disabled="formAction.formProcess" 
+          variant="flat" 
+          color="green-darken-2" 
+          class="flex-grow-1 rounded-pill text-none"
+          @click="handlePost"
+        >
           Post
         </v-btn>
       </v-card-actions>
@@ -368,3 +415,39 @@ onMounted(() => {
   <!-- Posts section -->
   <UsersPost />
 </template>
+
+<style scoped>
+.profile-header {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+}
+
+.profile-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+
+.profile-content {
+  margin-top: -60px;
+  position: relative;
+  z-index: 2;
+}
+
+.profile-avatar {
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-gradient {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+
+.gap-3 {
+  gap: 12px;
+}
+</style>

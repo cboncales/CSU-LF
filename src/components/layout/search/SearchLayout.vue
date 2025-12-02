@@ -36,6 +36,21 @@ onMounted(() => {
 
 // Listen for profile updates to refresh posts
 window.addEventListener('profile-updated', fetchPosts)
+
+// Format date to readable string
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 </script>
 
 <template>
@@ -110,7 +125,7 @@ window.addEventListener('profile-updated', fetchPosts)
                     : post.full_name
                 }}
               </h3>
-              <p class="text-caption text-grey-darken-1 mb-0">Found an item</p>
+              <p class="text-caption text-grey-darken-1 mb-0">{{ formatDate(post.created_at) }}</p>
             </div>
           </div>
 

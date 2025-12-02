@@ -62,6 +62,7 @@ const fetchSavedPosts = async () => {
         item_name: post.item_name,
         description: post.description,
         image: post.image,
+        created_at: post.created_at,
         post_owner: {
           first_name: post.firstname,
           last_name: post.lastname,
@@ -107,6 +108,21 @@ const removeFromSaved = async (postId) => {
   } catch (err) {
     console.error('Unexpected error while removing post from saved:', err.message)
   }
+}
+
+// Format date to readable string
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // Fetch data on component mount
@@ -164,7 +180,7 @@ onMounted(fetchSavedPosts)
                         : post.post_owner.full_name
                     }}
                   </h3>
-                  <p class="text-caption text-grey-darken-1 mb-0">Found an item</p>
+                  <p class="text-caption text-grey-darken-1 mb-0">{{ formatDate(post.created_at) }}</p>
                 </div>
               </div>
 

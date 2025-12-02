@@ -178,12 +178,11 @@ const uploadImage = async (file) => {
       </v-col>
     </v-row>
     <v-row dense>
-      <v-col cols="12" sm="8" md="6" v-for="post in posts" :key="post.id">
+      <v-col cols="12" v-for="post in posts" :key="post.id">
         <v-card
-          class="mb-4 rounded-xl"
-          max-width="4000"
+          class="mb-4 rounded-xl post-card"
           outlined
-          elevation="10"
+          elevation="3"
           link
           @click="showDetails(post)"
         >
@@ -191,8 +190,8 @@ const uploadImage = async (file) => {
             <!-- Poster Image -->
             <v-row align="center" class="mx-1 my-2">
               <!-- Avatar Column -->
-              <v-col cols="2" class="d-flex align-center justify-center">
-                <v-avatar size="50" class="mx-2" color="black">
+              <v-col cols="auto" class="d-flex align-center">
+                <v-avatar size="56" color="grey-lighten-2">
                   <!-- Check if profile_pic exists and is not null or empty -->
                   <v-img
                     v-if="profilePic && profilePic !== ''"
@@ -215,13 +214,14 @@ const uploadImage = async (file) => {
                 </v-avatar>
               </v-col>
               <!-- Name Column -->
-              <v-col cols="8" class="d-flex align-center text-light-green-darken-3">
-                <h3 class="m-0">
+              <v-col class="d-flex flex-column justify-center">
+                <h3 class="text-subtitle-1 font-weight-bold text-green-darken-3 mb-0">
                   {{ firstName && lastName ? firstName + ' ' + lastName : full_name }}
                 </h3>
+                <p class="text-caption text-grey-darken-1 mb-0">Posted an item</p>
               </v-col>
               <!-- Menu Column -->
-              <v-col cols="2" class="d-flex align-center justify-end">
+              <v-col cols="auto" class="d-flex align-center justify-end">
                 <v-menu offset-y>
                   <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-format-list-bulleted" class="ml-auto" v-bind="props"></v-icon>
@@ -239,15 +239,15 @@ const uploadImage = async (file) => {
             </v-row>
           </v-list-item>
           <!-- Post Image -->
-          <v-img
-            v-if="post.image"
-            height="200"
-            :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
-            cover
-            :alt="post.item_name || 'Post Image'"
-          />
-          <v-card-title class="text-light-green-darken-3">{{ post.item_name }}</v-card-title>
-          <v-card-subtitle class="text-light-green-darken-3">{{
+          <div class="post-image-container" v-if="post.image">
+            <v-img
+              :src="`https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/items/${post.image}`"
+              contain
+              :alt="post.item_name || 'Post Image'"
+            />
+          </div>
+          <v-card-title class="text-green-darken-3 font-weight-bold">{{ post.item_name }}</v-card-title>
+          <v-card-subtitle class="text-grey-darken-2">{{
             post.description
           }}</v-card-subtitle>
         </v-card>
@@ -265,36 +265,84 @@ const uploadImage = async (file) => {
     <!-- Edit Post Modal -->
     <v-dialog v-model="isEditModalVisible" max-width="600">
       <template v-slot:default>
-        <v-card>
-          <v-card-title>Edit Post</v-card-title>
-          <v-card-text>
+        <v-card class="rounded-xl">
+          <div class="modal-gradient pa-6">
+            <h2 class="text-h5 font-weight-bold text-white text-center">Edit Post</h2>
+          </div>
+          <v-card-text class="pt-6 pb-4 px-6">
             <v-form>
               <v-text-field
                 v-model="editPostData.item_name"
                 label="Item Name"
-                outlined
-                dense
+                variant="outlined"
+                density="comfortable"
+                class="mb-2"
               ></v-text-field>
               <v-textarea
                 v-model="editPostData.description"
                 label="Description"
-                outlined
-                dense
+                variant="outlined"
+                density="comfortable"
+                rows="3"
+                class="mb-2"
               ></v-textarea>
               <v-file-input
                 label="Upload Image"
                 v-model="editPostData.imageFile"
                 accept="image/*"
+                variant="outlined"
+                density="comfortable"
+                prepend-icon="mdi-camera"
                 show-size
               ></v-file-input>
             </v-form>
           </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="updatePost">Save</v-btn>
-            <v-btn color="secondary" @click="isEditModalVisible = false">Cancel</v-btn>
+          <v-card-actions class="px-6 pb-6">
+            <v-btn 
+              variant="outlined" 
+              color="grey-darken-1" 
+              class="flex-grow-1 rounded-pill text-none"
+              @click="isEditModalVisible = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn 
+              variant="flat" 
+              color="green-darken-2" 
+              class="flex-grow-1 rounded-pill text-none"
+              @click="updatePost"
+            >
+              Save Changes
+            </v-btn>
           </v-card-actions>
         </v-card>
       </template>
     </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+.post-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.post-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  min-height: 300px;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.modal-gradient {
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+</style>

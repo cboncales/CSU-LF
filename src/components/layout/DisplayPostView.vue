@@ -45,7 +45,8 @@ const fetchPostsWithUsers = async () => {
       facebook_link: post.facebook_link,
       profile_pic: post.profile_pic,
       full_name: post.full_name,
-      avatar_url: post.avatar_url
+      avatar_url: post.avatar_url,
+      created_at: post.created_at
     }))
     
     console.log('Mapped posts:', postsWithUsers.value)
@@ -107,6 +108,21 @@ const showDetails = (post) => {
   isModalVisible.value = true // Open the modal
 }
 
+// Format date to readable string
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+  
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 
 // Fetch data on component mount
 onMounted(async () => {
@@ -149,7 +165,7 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
               <h3 class="text-green-darken-3 font-weight-bold text-subtitle-1 mb-0">
                 {{ post.firstname && post.lastname ? post.firstname + ' ' + post.lastname : post.full_name }}
               </h3>
-              <p class="text-caption text-grey-darken-1 mb-0">Found an item</p>
+              <p class="text-caption text-grey-darken-1 mb-0">{{ formatDate(post.created_at) }}</p>
             </div>
           </div>
 
