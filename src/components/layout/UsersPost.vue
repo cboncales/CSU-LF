@@ -246,10 +246,20 @@ const uploadImage = async (file) => {
               :alt="post.item_name || 'Post Image'"
             />
           </div>
-          <v-card-title class="text-green-darken-3 font-weight-bold">{{ post.item_name }}</v-card-title>
-          <v-card-subtitle class="text-grey-darken-2">{{
-            post.description
-          }}</v-card-subtitle>
+          
+          <!-- Post Content -->
+          <v-card-text class="pt-4 pb-3">
+            <div class="post-item-badge mb-2">
+              <v-icon size="small" color="green-darken-2" class="mr-1">mdi-tag</v-icon>
+              <span class="text-caption text-grey-darken-1">Item Found</span>
+            </div>
+            <h3 class="text-h6 font-weight-bold text-green-darken-3 mb-2">
+              {{ post.item_name }}
+            </h3>
+            <p class="text-body-2 text-grey-darken-2 post-description">
+              {{ post.description }}
+            </p>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -344,5 +354,22 @@ const uploadImage = async (file) => {
 
 .modal-gradient {
   background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+}
+
+.post-item-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background-color: #f1f8f4;
+  border-radius: 16px;
+  border: 1px solid #c8e6c9;
+}
+
+.post-description {
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
