@@ -3,6 +3,7 @@ import { defineProps, defineEmits, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/utils/supabase'
 import { useAuthStore } from '@/stores/authUser'
+import SideNews from './SideNews.vue'
 
 
 //profile url in supabase
@@ -10,14 +11,20 @@ const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/p
 const unreadMessageCount = ref(0)
 const currentUserId = ref(null)
 let realtimeChannel = null
+const showMobileMenu = ref(false)
 
 // Props
-defineProps({
+const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: false,
+    default: true
   },
   permanent: {
+    type: Boolean,
+    default: false
+  },
+  mobileOnly: {
     type: Boolean,
     default: false
   }
@@ -155,7 +162,8 @@ window.addEventListener('profile-updated', fetchUserDetails)
 </script>
 
 <template>
-  <div class="side-nav-card rounded-xl shadow-lg overflow-hidden h-full">
+  <!-- Desktop Side Navigation -->
+  <div v-if="!mobileOnly" class="side-nav-card rounded-xl shadow-lg overflow-hidden h-full d-none d-md-flex">
     <!-- Profile Section -->
     <div class="profile-header text-center py-2 px-4">
       <div class="d-flex align-center justify-center mb-3">
@@ -271,9 +279,131 @@ window.addEventListener('profile-updated', fetchUserDetails)
       </v-btn>
     </div>
   </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <v-bottom-navigation
+    v-model="currentRoute"
+    class="d-md-none mobile-bottom-nav"
+    color="green-darken-3"
+    grow
+    bg-color="white"
+    app
+  >
+    <v-btn value="dashboard" @click="navigateTo('dashboard')">
+      <v-icon>mdi-home</v-icon>
+      <span class="text-caption">Home</span>
+    </v-btn>
+
+    <v-btn value="search" @click="navigateTo('search')">
+      <v-icon>mdi-magnify</v-icon>
+      <span class="text-caption">Search</span>
+    </v-btn>
+
+    <v-btn value="save" @click="navigateTo('save')">
+      <v-icon>mdi-bookmark</v-icon>
+      <span class="text-caption">Saved</span>
+    </v-btn>
+
+    <v-btn value="messages" @click="navigateTo('messages')">
+      <v-badge
+        v-if="unreadMessageCount > 0"
+        :content="unreadMessageCount"
+        color="red"
+        overlap
+      >
+        <v-icon>mdi-message-text</v-icon>
+      </v-badge>
+      <v-icon v-else>mdi-message-text</v-icon>
+      <span class="text-caption">Messages</span>
+    </v-btn>
+
+    <v-btn value="menu" @click="showMobileMenu = true">
+      <v-icon>mdi-menu</v-icon>
+      <span class="text-caption">More</span>
+    </v-btn>
+  </v-bottom-navigation>
+
+  <!-- Mobile Menu Dialog (includes Profile, About, Side News, Logout) -->
+  <v-dialog v-model="showMobileMenu" fullscreen transition="dialog-bottom-transition">
+    <v-card class="mobile-menu-card">
+      <v-toolbar color="green-darken-3" dark>
+        <v-toolbar-title>Menu</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="showMobileMenu = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <div class="pa-4">
+        <!-- Profile Section -->
+        <v-card class="mb-4 pa-4 text-center" color="green-lighten-5">
+          <v-avatar size="80" class="mx-auto mb-3 elevation-4" color="white">
+            <v-img
+              v-if="profile_pic && typeof profile_pic === 'string' && profile_pic !== '' && profile_pic !== null"
+              :src="profile_pic.startsWith('http') ? profile_pic : profileUrl + profile_pic"
+              alt="User Avatar"
+              cover
+            />
+            <v-img
+              v-else
+              :src="avatar_url"
+              alt="User Avatar"
+              cover
+            />
+          </v-avatar>
+          <h3 class="text-green-darken-3 font-weight-bold text-h6 mb-1">
+            {{ firstName && lastName ? firstName + ' ' + lastName : full_name }}
+          </h3>
+        </v-card>
+
+        <!-- Menu Items -->
+        <v-list>
+          <v-list-item
+            @click="navigateTo('profile'); showMobileMenu = false"
+            prepend-icon="mdi-account"
+            title="Profile"
+            class="mb-2"
+          ></v-list-item>
+
+          <v-list-item
+            @click="navigateTo('about'); showMobileMenu = false"
+            prepend-icon="mdi-information"
+            title="About CSULF"
+            class="mb-2"
+          ></v-list-item>
+
+          <v-divider class="my-3"></v-divider>
+
+          <!-- Side News Section -->
+          <v-list-item class="mb-2">
+            <v-list-item-title class="text-h6 font-weight-bold text-green-darken-3 mb-2">
+              Latest News
+            </v-list-item-title>
+          </v-list-item>
+
+          <SideNews />
+
+          <v-divider class="my-3"></v-divider>
+
+          <v-list-item
+            @click="onLogout"
+            prepend-icon="mdi-logout"
+            title="Sign Out"
+            class="text-red"
+          ></v-list-item>
+        </v-list>
+      </div>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
+.mobile-bottom-nav {
+  z-index: 9999 !important;
+  position: fixed !important;
+  bottom: 0 !important;
+}
+
 .side-nav-card {
   background: linear-gradient(180deg, #2e7d32 0%, #1b5e20 100%);
   display: flex;
@@ -302,5 +432,9 @@ window.addEventListener('profile-updated', fetchUserDetails)
 
 .message-badge {
   font-weight: bold;
+}
+
+.mobile-menu-card {
+  background: #f5f5f5;
 }
 </style>

@@ -128,13 +128,53 @@ const formatDate = (dateString) => {
 }
 
 // Open chat modal
-const openChat = (post) => {
+const openChat = async (post) => {
+  // Determine who the conversation partner is
+  // If current user owns the post, we need to find who they're chatting with
+  // Otherwise, the partner is the post owner
+  
+  let partnerId, partnerFirstname, partnerLastname, partnerFullName, partnerAvatar
+  
+  if (post.user_id === userId.value) {
+    // Current user owns this post - need to get the other person's info
+    // We'll fetch this from messages to find the conversation partner
+    const { data: messages } = await supabase
+      .from('messages')
+      .select('sender_id, receiver_id')
+      .eq('post_id', post.post_id)
+      .or(`sender_id.eq.${userId.value},receiver_id.eq.${userId.value}`)
+      .limit(1)
+    
+    if (messages && messages.length > 0) {
+      partnerId = messages[0].sender_id === userId.value ? messages[0].receiver_id : messages[0].sender_id
+      
+      // Fetch partner's info from all posts
+      const { data: allPosts } = await supabase.rpc('get_posts_with_user_info')
+      const partnerPost = allPosts?.find(p => p.user_id === partnerId)
+      
+      if (partnerPost) {
+        partnerFirstname = partnerPost.firstname
+        partnerLastname = partnerPost.lastname
+        partnerFullName = partnerPost.full_name
+        partnerAvatar = partnerPost.profile_pic || partnerPost.avatar_url
+      }
+    }
+  } else {
+    // Partner is the post owner
+    partnerId = post.user_id
+    partnerFirstname = post.firstname
+    partnerLastname = post.lastname
+    partnerFullName = post.full_name
+    partnerAvatar = post.profile_pic || post.avatar_url
+  }
+  
   selectedChatPost.value = {
     post_id: post.post_id,
-    user_id: post.user_id,
-    firstname: post.firstname,
-    lastname: post.lastname,
-    full_name: post.full_name,
+    user_id: partnerId,
+    firstname: partnerFirstname,
+    lastname: partnerLastname,
+    full_name: partnerFullName,
+    profile_pic: partnerAvatar,
     item_name: post.item_name
   }
   showChatModal.value = true
@@ -144,7 +184,10 @@ const openChat = (post) => {
 const handleNewMessageReceived = async (event) => {
   const newMessage = event.detail;
   
-  // Fetch the post details for this message
+  // Only auto-open if we're NOT the sender
+  if (newMessage.sender_id === userId.value) return;
+  
+  // Fetch all posts to get sender's info
   const { data: postData, error: postError } = await supabase
     .rpc('get_posts_with_user_info')
   
@@ -156,14 +199,18 @@ const handleNewMessageReceived = async (event) => {
   // Find the post that matches the message's post_id
   const post = postData.find(p => p.post_id === newMessage.post_id);
   
-  if (post && newMessage.sender_id !== userId.value) {
-    // Auto-open chat modal with the sender's post
+  // Get sender's info from any of their posts
+  const senderPost = postData.find(p => p.user_id === newMessage.sender_id);
+  
+  if (post && senderPost) {
+    // Auto-open chat modal with the sender's info
     selectedChatPost.value = {
       post_id: post.post_id,
       user_id: newMessage.sender_id,
-      firstname: post.firstname,
-      lastname: post.lastname,
-      full_name: post.full_name,
+      firstname: senderPost.firstname,
+      lastname: senderPost.lastname,
+      full_name: senderPost.full_name,
+      profile_pic: senderPost.profile_pic || senderPost.avatar_url,
       item_name: post.item_name
     };
     showChatModal.value = true;
@@ -189,13 +236,13 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
 </script>
 
 <template>
-  <v-container>
+  <v-container class="post-list-container">
     <!-- Post List -->
-    <v-row dense>
-      <v-col cols="12" v-for="post in postsWithUsers" :key="post.post_id">
+    <v-row dense class="post-list-row">
+      <v-col class="post-col" cols="12" v-for="post in postsWithUsers" :key="post.post_id">
         <v-card
           class="post-card rounded-xl mb-4 overflow-hidden"
-          elevation="3"
+          elevation="2"
           @click="showDetails(post)"
         >
           <!-- Post Header -->
@@ -270,7 +317,9 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
           </v-card-actions>
         </v-card>
       </v-col>
-    </v-row>    <!-- Success Modal -->
+    </v-row>
+
+    <!-- Success Modal -->
     <v-dialog v-model="showSuccessModal" persistent max-width="400">
       <v-card>
         <v-card-title class="headline text-light-green-darken-3">Success</v-card-title>
@@ -305,15 +354,42 @@ window.addEventListener('profile-updated', fetchPostsWithUsers)
 </template>
 
 <style scoped>
+.post-list-container {
+  margin-bottom: 0 !important;
+  padding-bottom: 10px;
+  z-index: 1;
+}
+
+.post-list-row {
+  margin-bottom: 0 !important;
+  z-index: 1;
+}
+
+.post-col{
+  z-index: 1;
+}
+
+/* Mobile: control overflow and add padding for bottom nav */
+@media (max-width: 959px) {
+  .post-list-container {
+    overflow-y: auto;
+    max-height: calc(100vh - 260px);
+  }
+}
+
 .post-card {
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 2; /* Keep posts BELOW bottom nav */
+  margin-bottom: 16px;
 }
 
 .post-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  z-index: 2; /* Even on hover, keep it below bottom nav */
 }
 
 .post-header {
