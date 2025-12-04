@@ -13,6 +13,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+// URL of the image
+const profileUrl = 'https://ndmbunubneumkuadlylz.supabase.co/storage/v1/object/public/images/'
+
 const message = ref('')
 const messages = ref([])
 const currentUserId = ref(null)
@@ -316,7 +319,12 @@ onUnmounted(() => {
         <div class="chat-header pa-3 d-flex align-center justify-space-between">
           <div class="d-flex align-center flex-grow-1" style="min-width: 0;">
             <v-avatar size="40" class="mr-3">
-              <v-img v-if="postOwnerAvatar" :src="postOwnerAvatar" cover></v-img>
+              <v-img 
+                v-if="postOwnerAvatar && typeof postOwnerAvatar === 'string' && postOwnerAvatar !== ''"
+                :src="postOwnerAvatar.startsWith('http') ? postOwnerAvatar : profileUrl + postOwnerAvatar"
+                alt="User Avatar"
+                cover
+              ></v-img>
               <v-icon v-else color="white" size="24">mdi-account</v-icon>
             </v-avatar>
             <div style="min-width: 0; flex: 1;">
