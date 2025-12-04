@@ -166,7 +166,7 @@ onMounted(() => {
                 <h2 class="text-h6 text-green-darken-3 font-weight-bold mb-0">
                   Hello {{ firstName && lastName ? firstName + ' ' + lastName : full_name || 'Guest' }}!
                 </h2>
-                <p class="text-body-2 text-grey-darken-1 mb-0">Found something? Help others find their belongings</p>
+                <p class="text-body-2 text-grey-darken-1 mb-0">Lost or Found something? Help others find their belongings</p>
               </div>
             </div>
             <v-btn
@@ -206,7 +206,7 @@ onMounted(() => {
               <label class="text-body-2 font-weight-medium text-grey-darken-2 mb-2 d-block">Item Name</label>
               <v-text-field
                 v-model="item_name"
-                placeholder="What did you find?"
+                placeholder="What did you lost/find?"
                 variant="outlined"
                 density="comfortable"
                 rounded="lg"
