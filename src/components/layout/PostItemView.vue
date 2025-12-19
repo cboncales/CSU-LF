@@ -237,7 +237,7 @@ onMounted(() => {
               <label class="text-body-2 font-weight-medium text-grey-darken-2 mb-2 d-block">Description</label>
               <v-textarea
                 v-model="description"
-                placeholder="Describe the item and where you found it..."
+                placeholder="Describe the item and where you lost/found it..."
                 variant="outlined"
                 rounded="lg"
                 color="green-darken-3"
