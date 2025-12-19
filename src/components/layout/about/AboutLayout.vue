@@ -22,8 +22,7 @@ onMounted(fetchUserCount)
     <br />
     <v-row justify="center">
       <v-col cols="12" sm="12" md="8">
-        <br /><br />
-        <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
+        <!-- <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
           <v-list class="text-center pt-5">
             <div>
               <p class="text-light-green-darken-3 font-weight-bold text-h5">System User</p>
@@ -35,10 +34,10 @@ onMounted(fetchUserCount)
               </p>
             </div>
           </v-list>
-        </v-card>
+        </v-card> -->
 
         <br />
-        <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
+        <v-card class="rounded-xl" max-width="1000" elevation="4">
           <v-list class="text-center pt-5">
             <div>
               <v-avatar size="200" class="mx-auto">
@@ -62,15 +61,15 @@ onMounted(fetchUserCount)
 
         <br />
 
-        <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
-          <v-list class="text-center pa-5">
+        <!-- <v-card class="rounded-xl mb-4" max-width="1000" elevation="4">
+          <v-list class="text-center pa-5"> -->
             <!-- Section Title -->
-            <div>
+            <!-- <div>
               <p class="text-light-green-darken-3 font-weight-bold text-h5">About the Developers</p>
-            </div>
+            </div> -->
 
             <!-- Description -->
-            <div>
+            <!-- <div>
               <p class="text-light-green-darken-3 ma-6">
                 This innovative solution is the collaborative effort of a dedicated group of Caraga
                 State University students. The development team includes
@@ -83,12 +82,12 @@ onMounted(fetchUserCount)
                 improve the university experience by addressing a common issue with a practical and
                 user-friendly application.
               </p>
-            </div>
+            </div> -->
 
             <!-- Developer Photos -->
-            <v-row justify="center" class="mt-4 pa-3">
+            <!-- <v-row justify="center" class="mt-4 pa-3"> -->
               <!-- Developer 1 -->
-              <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
+              <!-- <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
                 <v-avatar size="100" class="mx-auto" color="black">
                   <v-img src="/images/mkdp1.jpg" alt="Mark Kenth Paran" class="rounded" />
                 </v-avatar>
@@ -96,19 +95,19 @@ onMounted(fetchUserCount)
                 <p class="text-light-green-darken-3 text-caption">
                   System Analyst & Frontend Developer
                 </p>
-              </v-col>
+              </v-col> -->
 
               <!-- Developer 2 -->
-              <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
+              <!-- <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
                 <v-avatar size="100" class="mx-auto" color="black">
                   <v-img src="/images/alignacio.png" alt="Andrie Ignacio" class="rounded" />
                 </v-avatar>
                 <p class="text-light-green-darken-3 font-weight-bold mt-2">Andrie Ignacio</p>
                 <p class="text-light-green-darken-3 text-caption">Frontend Developer</p>
-              </v-col>
+              </v-col> -->
 
               <!-- Developer 3 -->
-              <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
+              <!-- <v-col cols="12" sm="4" md="4" lg="3" class="text-center">
                 <v-avatar size="100" class="mx-auto" color="black">
                   <v-img src="/images/emman.jpg" alt="Emmanuel Ampatin" class="rounded" />
                 </v-avatar>
@@ -117,7 +116,7 @@ onMounted(fetchUserCount)
               </v-col>
             </v-row>
           </v-list>
-        </v-card>
+        </v-card> -->
 
         <br />
 
